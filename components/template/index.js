@@ -1,5 +1,3 @@
-var templateString = require('es6-template-strings');
-
 var debug = AFRAME.utils.debug;
 var extend = AFRAME.utils.extend;
 var templateCache = {};  // Template cache.
@@ -24,6 +22,7 @@ LIB_SRC[JADE] = 'https://cdnjs.cloudflare.com/ajax/libs/jade/1.11.0/jade.min.js'
 LIB_SRC[MUSTACHE] = 'https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js';
 LIB_SRC[NUNJUCKS] = 'https://cdnjs.cloudflare.com/ajax/libs/nunjucks/2.3.0/nunjucks.min.js';
 
+
 AFRAME.registerComponent('template', {
   schema: {
     insert: {
@@ -39,28 +38,29 @@ AFRAME.registerComponent('template', {
     },
     data: {
       default: ''
+    },
+    dirty: {
+        // set to true to force template render
+        default: false
     }
   },
 
   update: function (oldData) {
     var data = this.data;
+    this.oldData.dirty = false; // set dirty to false to force re-render
     var el = this.el;
     var fetcher = data.src[0] === '#' ? fetchTemplateFromScriptTag : fetchTemplateFromXHR;
     var templateCacheItem = templateCache[data.src];
-
-    // Replace children if swapping templates.
-    if (oldData && oldData.src !== data.src) {
-      while (el.firstChild) {
-        el.removeChild(el.firstChild);
-      }
-    }
 
     if (templateCacheItem) {
       this.renderTemplate(templateCacheItem);
       return;
     }
 
-    fetcher(data.src, data.type).then(this.renderTemplate.bind(this));
+    if (!this.fetching) {
+      this.fetching = fetcher(data.src, data.type);
+      this.fetching.then(this.renderTemplate.bind(this));
+    }
   },
 
   renderTemplate: function (templateCacheItem) {
@@ -77,7 +77,10 @@ AFRAME.registerComponent('template', {
 
     var renderedTemplate = renderTemplate(templateCacheItem.template, templateCacheItem.type,
                                           templateData);
+    // Replace children
+    el.textContent = '';
     el.insertAdjacentHTML(data.insert, renderedTemplate);
+    this.fetching = null;
     el.emit('templaterendered');
   }
 });
@@ -113,7 +116,7 @@ function renderTemplate (template, type, context) {
     }
     default: {
       // If type not specified, assume HTML. Add some ES6 template string sugar.
-      return templateString(template, context);
+      return template;
     }
   }
 }
