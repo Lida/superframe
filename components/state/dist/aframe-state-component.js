@@ -844,7 +844,13 @@ AFRAME.registerComponent('bind-for', {
         var bindForKey = this.getBindForKey(item, i);
         itemEl = el.querySelector('[data-bind-for-key="' + bindForKey + '"]');
       }
-      itemEl.emit('bindforupdate', item, false);
+      if (itemEl.hasLoaded) {
+        itemEl.emit('bindforupdate', item, false);
+      } else {
+        itemEl.addEventListener('loaded', function () {
+          itemEl.emit('bindforupdate', item, false);
+        });
+      }
     }
 
     if (!list[i + 1]) {
@@ -896,7 +902,9 @@ AFRAME.registerComponent('bind-for', {
         toRemoveEls[_i2].setAttribute('data-bind-for-active', 'false');
         toRemoveEls[_i2].removeAttribute('data-bind-for-key');
         toRemoveEls[_i2].removeAttribute('data-bind-for-value');
-        toRemoveEls[_i2].emit('bindfordeactivate', null, false);
+        if (toRemoveEls[_i2].hasLoaded) {
+          toRemoveEls[_i2].emit('bindfordeactivate', null, false);
+        }
         toRemoveEls[_i2].pause();
       }
 
@@ -937,7 +945,13 @@ AFRAME.registerComponent('bind-for', {
         itemEl.object3D.visible = true;
         itemEl.play();
         itemEl.setAttribute('data-bind-for-active', 'true');
-        itemEl.emit('bindforupdateinplace', item, false);
+        if (itemEl.hasLoaded) {
+          itemEl.emit('bindforupdateinplace', item, false);
+        } else {
+          itemEl.addEventListener('loaded', function () {
+            itemEl.emit('bindforupdateinplace', item, false);
+          });
+        }
       }
       this.renderedKeys.push(keyValue);
     } else if (activeKeys.indexOf(keyValue) !== -1) {
@@ -949,7 +963,13 @@ AFRAME.registerComponent('bind-for', {
       } else {
         itemEl = el.querySelector('[data-bind-for-key="' + bindForKey + '"]');
       }
-      itemEl.emit('bindforupdateinplace', item, false);
+      if (itemEl.hasLoaded) {
+        itemEl.emit('bindforupdateinplace', item, false);
+      } else {
+        itemEl.addEventListener('loaded', function () {
+          itemEl.emit('bindforupdateinplace', item, false);
+        });
+      }
     }
 
     if (!list[i + 1]) {

@@ -112,7 +112,13 @@ AFRAME.registerComponent('bind-for', {
         const bindForKey = this.getBindForKey(item, i);
         itemEl = el.querySelector('[data-bind-for-key="' + bindForKey + '"]');
       }
-      itemEl.emit('bindforupdate', item, false);
+      if (itemEl.hasLoaded) {
+        itemEl.emit('bindforupdate', item, false);
+      } else {
+        itemEl.addEventListener('loaded', () => {
+          itemEl.emit('bindforupdate', item, false);
+        });  
+      }
     }
 
     if (!list[i + 1]) { return; }
@@ -163,7 +169,9 @@ AFRAME.registerComponent('bind-for', {
         toRemoveEls[i].setAttribute('data-bind-for-active', 'false');
         toRemoveEls[i].removeAttribute('data-bind-for-key');
         toRemoveEls[i].removeAttribute('data-bind-for-value');
-        toRemoveEls[i].emit('bindfordeactivate', null, false);
+        if (toRemoveEls[i].hasLoaded) {
+          toRemoveEls[i].emit('bindfordeactivate', null, false);
+        }
         toRemoveEls[i].pause();
       }
 
@@ -202,7 +210,13 @@ AFRAME.registerComponent('bind-for', {
         itemEl.object3D.visible = true;
         itemEl.play();
         itemEl.setAttribute('data-bind-for-active', 'true');
-        itemEl.emit('bindforupdateinplace', item, false);
+        if (itemEl.hasLoaded) {
+          itemEl.emit('bindforupdateinplace', item, false);
+        } else {
+          itemEl.addEventListener('loaded', () => {
+            itemEl.emit('bindforupdateinplace', item, false);
+          });  
+        }
       }
       this.renderedKeys.push(keyValue);
     } else if (activeKeys.indexOf(keyValue) !== -1) {
@@ -214,8 +228,14 @@ AFRAME.registerComponent('bind-for', {
       } else {
         itemEl = el.querySelector('[data-bind-for-key="' + bindForKey + '"]');
       }
-      itemEl.emit('bindforupdateinplace', item, false);
-    }
+      if (itemEl.hasLoaded) {
+        itemEl.emit('bindforupdateinplace', item, false);
+      } else {
+        itemEl.addEventListener('loaded', () => {
+          itemEl.emit('bindforupdateinplace', item, false);
+        });  
+      }
+  }
 
     if (!list[i + 1]) { return; }
 
